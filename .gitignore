@@ -9,3 +9,6 @@ dist/
 # Environment files
 .env.*
 !.env.example
+
+# Vercel
+.vercel

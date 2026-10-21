@@ -1,9 +1,32 @@
 import { NextFunction, Request, Response } from 'express';
 import { env } from '../config/env';
 
-export const errorHandler = (err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err);
-  res.status(500).json({
-    message: env.nodeEnv === 'production' ? 'Internal server error' : err.message,
-  });
+export interface AppError extends Error {
+  status?: number;
+  errors?: any[];
+}
+
+export const errorHandler = (
+  err: AppError,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
+  const status = typeof err.status === 'number' ? err.status : 500;
+  
+  if (status >= 500) {
+    console.error('Unhandled server error:', err);
+  }
+
+  const responseBody: Record<string, any> = {
+    message: status === 500 && env.nodeEnv === 'production'
+      ? 'Internal server error'
+      : (err.message || 'An unexpected error occurred'),
+  };
+
+  if (err.errors) {
+    responseBody.errors = err.errors;
+  }
+
+  res.status(status).json(responseBody);
 };

@@ -1,0 +1,1998 @@
+{
+  "info": {
+    "_postman_id": "a9b2c3d4-e5f6-47a8-b9c0-1d2e3f4a5b6c",
+    "name": "Authentication & Profile APIs",
+    "description": "Complete API Collection for DailyOS Authentication and User Profile Management modules.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Authentication module endpoints: register, login, Google sign-in, refresh token, logout, email verification, password management, and active session management.",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.user && jsonData.user.id) {",
+                  "    pm.environment.set(\"user_id\", jsonData.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.smith@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Smith\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new user using email and password. Normalizes email and hashes password with Argon2id."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"alex.smith@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Smith\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Registration successful. Please verify your email address.\",\n  \"user\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"alex.smith@example.com\",\n    \"status\": \"active\",\n    \"onboardingCompleted\": false,\n    \"createdAt\": \"2026-10-19T12:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.environment.set(\"access_token\", jsonData.accessToken);",
+                  "}",
+                  "if (jsonData.refreshToken) {",
+                  "    pm.environment.set(\"refresh_token\", jsonData.refreshToken);",
+                  "}",
+                  "if (jsonData.user && jsonData.user.id) {",
+                  "    pm.environment.set(\"user_id\", jsonData.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Device-Name",
+                "value": "MacBook Pro Chrome",
+                "disabled": true
+              },
+              {
+                "key": "X-Device-Type",
+                "value": "desktop",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.smith@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticate user with email and password. Returns access token and rotating refresh token, and sets secure HTTP-only refresh cookie."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refreshToken\": \"3b98e1a7b82c4f6990d0ef04c867201b17b2e3...\",\n  \"user\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"alex.smith@example.com\",\n    \"status\": \"active\",\n    \"onboardingCompleted\": false,\n    \"emailVerifiedAt\": null,\n    \"displayName\": \"Alex Smith\",\n    \"profilePhotoUrl\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Google Sign-In",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.environment.set(\"access_token\", jsonData.accessToken);",
+                  "}",
+                  "if (jsonData.refreshToken) {",
+                  "    pm.environment.set(\"refresh_token\", jsonData.refreshToken);",
+                  "}",
+                  "if (jsonData.user && jsonData.user.id) {",
+                  "    pm.environment.set(\"user_id\", jsonData.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6Ij...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/google",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "google"
+              ]
+            },
+            "description": "Authenticates user via verified Google ID token. Finds or creates the user and auth account securely."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refreshToken\": \"9f8e7d6c5b4a3210...\",\n  \"user\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"alex.smith@gmail.com\",\n    \"status\": \"active\",\n    \"onboardingCompleted\": false,\n    \"emailVerifiedAt\": \"2026-10-19T12:00:00.000Z\",\n    \"displayName\": \"Alex Smith\",\n    \"profilePhotoUrl\": \"https://lh3.googleusercontent.com/a/photo.jpg\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.environment.set(\"access_token\", jsonData.accessToken);",
+                  "}",
+                  "if (jsonData.refreshToken) {",
+                  "    pm.environment.set(\"refresh_token\", jsonData.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "description": "Validates existing refresh token, rotates tokens, revokes the previous session, and returns new credentials."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refreshToken\": \"c4d5e6f7a8b90123...\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revokes the current session and clears HTTP-only refresh cookies without affecting other devices."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Logged out successfully.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout From All Devices",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout-all"
+              ]
+            },
+            "description": "Revokes all active sessions across all devices for the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"All active sessions have been revoked successfully.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"d41d8cd98f00b204e9800998ecf8427e\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/verify-email",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-email"
+              ]
+            },
+            "description": "Verifies email address using the single-use verification token sent to user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Email verified successfully. You may now log in.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.smith@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Requests a password reset link. Returns an identical success message even if the email does not exist to prevent account enumeration."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"If an account with that email exists, a password reset link has been sent.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset_token_hex_string\",\n  \"newPassword\": \"BrandNewSecurePassword456!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Validates reset token, updates password with Argon2id, and revokes all active sessions."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Password has been reset successfully. Please log in with your new password.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Current User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"User object returned\", function () {",
+                  "    pm.expect(jsonData.id).to.not.be.empty;",
+                  "    pm.expect(jsonData.email).to.not.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Returns basic account and profile info for the currently authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"email\": \"alex.smith@example.com\",\n  \"emailVerifiedAt\": \"2026-10-19T12:00:00.000Z\",\n  \"status\": \"active\",\n  \"onboardingCompleted\": false,\n  \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n  \"profile\": {\n    \"firstName\": \"Alex\",\n    \"lastName\": \"Smith\",\n    \"displayName\": \"Alex Smith\",\n    \"profilePhotoUrl\": null,\n    \"country\": \"United States\",\n    \"preferredLanguage\": \"en\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"SecurePassword123!\",\n  \"newPassword\": \"BrandNewSecurePassword456!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/update-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "update-password"
+              ]
+            },
+            "description": "Allows an authenticated user to update their password after verifying their current password."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Password updated successfully.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Active Sessions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.sessions && jsonData.sessions.length > 0) {",
+                  "    pm.environment.set(\"session_id\", jsonData.sessions[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "sessions"
+              ]
+            },
+            "description": "Returns all active login sessions and device details for the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"sessions\": [\n    {\n      \"id\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n      \"deviceName\": \"MacBook Pro Chrome\",\n      \"deviceType\": \"desktop\",\n      \"lastIp\": \"127.0.0.1\",\n      \"createdAt\": \"2026-10-19T12:00:00.000Z\",\n      \"expiresAt\": \"2026-10-26T12:00:00.000Z\",\n      \"isCurrent\": true\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Revoke Specific Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/auth/sessions/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "sessions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{session_id}}",
+                  "description": "The UUID of the session to revoke"
+                }
+              ]
+            },
+            "description": "Revokes a specific active session belonging to the user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Session revoked successfully.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "description": "Profile module endpoints: personal profile, health profile, body measurements, professional profile, lifestyle profile, personal goals, and complete unified profile.",
+      "item": [
+        {
+          "name": "Get Complete Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Contains unified sections\", function () {",
+                  "    pm.expect(jsonData.userId).to.not.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "complete"
+              ]
+            },
+            "description": "Retrieves the complete user profile combining personal information, dynamically computed age, health, latest body measurement, professional details, lifestyle details, and personal goals."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"userId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"email\": \"alex.smith@example.com\",\n  \"emailVerifiedAt\": \"2026-10-19T12:00:00.000Z\",\n  \"status\": \"active\",\n  \"onboardingCompleted\": false,\n  \"personal\": {\n    \"id\": \"uuid\",\n    \"first_name\": \"Alex\",\n    \"last_name\": \"Smith\",\n    \"display_name\": \"Alex Smith\",\n    \"date_of_birth\": \"1995-06-15\",\n    \"age\": 31,\n    \"gender\": \"female\",\n    \"country\": \"United States\",\n    \"city\": \"San Francisco\",\n    \"preferred_language\": \"en\"\n  },\n  \"health\": {\n    \"height_value\": \"175.00\",\n    \"height_unit\": \"cm\",\n    \"current_weight\": \"70.00\",\n    \"weight_unit\": \"kg\",\n    \"activity_level\": \"moderately_active\"\n  },\n  \"latestMeasurement\": {\n    \"weight\": \"70.00\",\n    \"height\": \"175.00\",\n    \"bmi\": \"22.86\",\n    \"recorded_at\": \"2026-10-19T12:00:00.000Z\"\n  },\n  \"professional\": {\n    \"occupation\": \"Software Architect\",\n    \"employment_status\": \"Full-time\",\n    \"company_name\": \"Tech Corp\"\n  },\n  \"lifestyle\": {\n    \"work_mode\": \"hybrid\",\n    \"dietary_preference\": \"Mediterranean\"\n  },\n  \"goals\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Personal Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/personal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "personal"
+              ]
+            },
+            "description": "Retrieves personal profile information. Calculates age dynamically from date_of_birth without permanent storage."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"profile\": {\n    \"id\": \"uuid\",\n    \"user_id\": \"uuid\",\n    \"first_name\": \"Alex\",\n    \"last_name\": \"Smith\",\n    \"display_name\": \"Alex Smith\",\n    \"profile_photo_url\": \"https://images.example.com/avatar.png\",\n    \"date_of_birth\": \"1995-06-15\",\n    \"gender\": \"female\",\n    \"pronouns\": \"she/her\",\n    \"phone_number\": \"+15551234567\",\n    \"country_code\": \"+1\",\n    \"country\": \"United States\",\n    \"state\": \"California\",\n    \"city\": \"San Francisco\",\n    \"bio\": \"Full-stack software engineer & avid reader.\",\n    \"preferred_language\": \"en\",\n    \"created_at\": \"2026-10-19T12:00:00.000Z\",\n    \"updated_at\": \"2026-10-19T12:00:00.000Z\",\n    \"age\": 31\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Personal Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Smith\",\n  \"displayName\": \"Alex S.\",\n  \"dateOfBirth\": \"1995-06-15\",\n  \"gender\": \"female\",\n  \"pronouns\": \"she/her\",\n  \"phoneNumber\": \"+15551234567\",\n  \"countryCode\": \"+1\",\n  \"country\": \"United States\",\n  \"state\": \"California\",\n  \"city\": \"San Francisco\",\n  \"bio\": \"Full-stack software engineer & marathon runner.\",\n  \"preferredLanguage\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/personal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "personal"
+              ]
+            },
+            "description": "Creates or updates personal profile fields independently."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"profile\": {\n    \"id\": \"uuid\",\n    \"user_id\": \"uuid\",\n    \"first_name\": \"Alex\",\n    \"last_name\": \"Smith\",\n    \"display_name\": \"Alex S.\",\n    \"date_of_birth\": \"1995-06-15\",\n    \"age\": 31,\n    \"gender\": \"female\",\n    \"country\": \"United States\",\n    \"city\": \"San Francisco\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile Photo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profilePhotoUrl\": \"https://images.example.com/avatar.png\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/personal/photo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "personal",
+                "photo"
+              ]
+            },
+            "description": "Updates profile photo URL for the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Profile photo updated successfully.\",\n  \"profilePhotoUrl\": \"https://images.example.com/avatar.png\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Health Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "health"
+              ]
+            },
+            "description": "Retrieves optional health and wellness profile information."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"health\": {\n    \"id\": \"uuid\",\n    \"user_id\": \"uuid\",\n    \"height_value\": \"175.00\",\n    \"height_unit\": \"cm\",\n    \"current_weight\": \"70.00\",\n    \"weight_unit\": \"kg\",\n    \"blood_group\": \"O+\",\n    \"activity_level\": \"moderately_active\",\n    \"fitness_level\": \"intermediate\",\n    \"dietary_preference\": \"Mediterranean\",\n    \"food_allergies\": [\n      \"peanuts\"\n    ],\n    \"sleep_target_hours\": \"8.00\",\n    \"water_target_ml\": 2500,\n    \"daily_step_target\": 10000\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Health Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"heightValue\": 175,\n  \"heightUnit\": \"cm\",\n  \"currentWeight\": 70,\n  \"weightUnit\": \"kg\",\n  \"bloodGroup\": \"O+\",\n  \"activityLevel\": \"moderately_active\",\n  \"fitnessLevel\": \"intermediate\",\n  \"dietaryPreference\": \"Mediterranean\",\n  \"foodAllergies\": [\n    \"peanuts\",\n    \"shellfish\"\n  ],\n  \"sleepTargetHours\": 8,\n  \"averageSleepHours\": 7.5,\n  \"waterTargetMl\": 2500,\n  \"exerciseFrequency\": \"4 times weekly\",\n  \"healthNotes\": \"None\",\n  \"fitnessObjectives\": [\n    \"Cardio health\",\n    \"Muscle tone\"\n  ],\n  \"preferredWorkoutTypes\": [\n    \"Running\",\n    \"Weightlifting\"\n  ],\n  \"dailyStepTarget\": 10000,\n  \"wakeUpTime\": \"06:30\",\n  \"sleepTime\": \"22:30\",\n  \"dietaryRestrictions\": [\n    \"Low refined sugar\"\n  ],\n  \"wellnessPreferences\": [\n    \"Daily hydration tracking\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "health"
+              ]
+            },
+            "description": "Creates or updates user health profile and wellness goals."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"health\": {\n    \"id\": \"uuid\",\n    \"user_id\": \"uuid\",\n    \"height_value\": \"175.00\",\n    \"height_unit\": \"cm\",\n    \"current_weight\": \"70.00\",\n    \"weight_unit\": \"kg\",\n    \"blood_group\": \"O+\",\n    \"activity_level\": \"moderately_active\",\n    \"fitness_level\": \"intermediate\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Health Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "health"
+              ]
+            },
+            "description": "Deletes health profile upon user request."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Health profile deleted successfully.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add Body Measurement",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.measurement && jsonData.measurement.id) {",
+                  "    pm.environment.set(\"measurement_id\", jsonData.measurement.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"weight\": 70,\n  \"height\": 175,\n  \"waist\": 78,\n  \"chest\": 96,\n  \"hips\": 94,\n  \"bodyFatPercentage\": 18.5,\n  \"recordedAt\": \"2026-10-19T07:30:00.000Z\",\n  \"notes\": \"Morning measurement before breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/measurements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "measurements"
+              ]
+            },
+            "description": "Adds a historical body measurement record. Automatically calculates BMI from weight and height without overwriting past entries."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"measurement\": {\n    \"id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",\n    \"user_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"weight\": \"70.00\",\n    \"height\": \"175.00\",\n    \"bmi\": \"22.86\",\n    \"waist\": \"78.00\",\n    \"chest\": \"96.00\",\n    \"hips\": \"94.00\",\n    \"body_fat_percentage\": \"18.50\",\n    \"recorded_at\": \"2026-10-19T07:30:00.000Z\",\n    \"notes\": \"Morning measurement before breakfast\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Body Measurements History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.length > 0) {",
+                  "    pm.environment.set(\"measurement_id\", jsonData.data[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/measurements?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "measurements"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Records per page (default: 10)"
+                }
+              ]
+            },
+            "description": "Retrieves chronological body measurement history with pagination."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",\n      \"user_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n      \"weight\": \"70.00\",\n      \"height\": \"175.00\",\n      \"bmi\": \"22.86\",\n      \"recorded_at\": \"2026-10-19T07:30:00.000Z\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 1,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Body Measurement",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"weight\": 71,\n  \"waist\": 77.5,\n  \"notes\": \"Post-workout adjustment\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/measurements/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "measurements",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{measurement_id}}",
+                  "description": "UUID of the body measurement record"
+                }
+              ]
+            },
+            "description": "Updates a specific historical measurement record. Re-calculates BMI if weight/height changes."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"measurement\": {\n    \"id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",\n    \"weight\": \"71.00\",\n    \"bmi\": \"23.18\",\n    \"waist\": \"77.50\",\n    \"notes\": \"Post-workout adjustment\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Body Measurement",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/measurements/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "measurements",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{measurement_id}}",
+                  "description": "UUID of the measurement to delete"
+                }
+              ]
+            },
+            "description": "Deletes a specific body measurement record."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Measurement record deleted successfully.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Professional Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/professional",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "professional"
+              ]
+            },
+            "description": "Retrieves career and education profile."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"professional\": {\n    \"id\": \"uuid\",\n    \"user_id\": \"uuid\",\n    \"occupation\": \"Senior Software Engineer\",\n    \"employment_status\": \"Full-time\",\n    \"company_name\": \"Tech Innovations Inc\",\n    \"industry\": \"Information Technology\",\n    \"experience_years\": \"6.5\",\n    \"education_level\": \"Master's Degree\",\n    \"highest_qualification\": \"M.S. in Computer Science\",\n    \"skills\": [\n      \"TypeScript\",\n      \"Node.js\",\n      \"PostgreSQL\",\n      \"Docker\"\n    ],\n    \"career_goal\": \"Become Principal Architect\",\n    \"work_start_time\": \"09:00:00\",\n    \"work_end_time\": \"17:30:00\",\n    \"work_days\": [\n      \"Monday\",\n      \"Tuesday\",\n      \"Wednesday\",\n      \"Thursday\",\n      \"Friday\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Professional Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"occupation\": \"Senior Software Engineer\",\n  \"employmentStatus\": \"Full-time\",\n  \"companyName\": \"Tech Innovations Inc\",\n  \"industry\": \"Information Technology\",\n  \"experienceYears\": 6.5,\n  \"educationLevel\": \"Master's Degree\",\n  \"highestQualification\": \"M.S. in Computer Science\",\n  \"skills\": [\n    \"TypeScript\",\n    \"Node.js\",\n    \"PostgreSQL\",\n    \"Docker\"\n  ],\n  \"careerGoal\": \"Become Principal Architect\",\n  \"workStartTime\": \"09:00\",\n  \"workEndTime\": \"17:30\",\n  \"workDays\": [\n    \"Monday\",\n    \"Tuesday\",\n    \"Wednesday\",\n    \"Thursday\",\n    \"Friday\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/professional",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "professional"
+              ]
+            },
+            "description": "Creates or updates career and education details."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"professional\": {\n    \"occupation\": \"Senior Software Engineer\",\n    \"company_name\": \"Tech Innovations Inc\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Lifestyle Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/lifestyle",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "lifestyle"
+              ]
+            },
+            "description": "Retrieves lifestyle and daily routine profile."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"lifestyle\": {\n    \"id\": \"uuid\",\n    \"user_id\": \"uuid\",\n    \"wake_up_time\": \"06:30:00\",\n    \"sleep_time\": \"22:30:00\",\n    \"work_mode\": \"hybrid\",\n    \"exercise_days\": [\n      \"Monday\",\n      \"Wednesday\",\n      \"Friday\"\n    ],\n    \"preferred_exercise\": [\n      \"Running\",\n      \"Gym\"\n    ],\n    \"dietary_preference\": \"Mediterranean\",\n    \"smoking_status\": \"non-smoker\",\n    \"alcohol_preference\": \"occasional\",\n    \"hobbies\": [\n      \"Photography\",\n      \"Hiking\",\n      \"Chess\"\n    ],\n    \"personal_interests\": [\n      \"AI\",\n      \"Philosophy\",\n      \"Space\"\n    ],\n    \"lifestyle_notes\": \"Consistent circadian rhythm target\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Lifestyle Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wakeUpTime\": \"06:30\",\n  \"sleepTime\": \"22:30\",\n  \"workMode\": \"hybrid\",\n  \"exerciseDays\": [\n    \"Monday\",\n    \"Wednesday\",\n    \"Friday\",\n    \"Saturday\"\n  ],\n  \"preferredExercise\": [\n    \"Running\",\n    \"Weightlifting\",\n    \"Yoga\"\n  ],\n  \"dietaryPreference\": \"Mediterranean\",\n  \"smokingStatus\": \"non-smoker\",\n  \"alcoholPreference\": \"occasional\",\n  \"hobbies\": [\n    \"Photography\",\n    \"Hiking\",\n    \"Chess\"\n  ],\n  \"personalInterests\": [\n    \"AI\",\n    \"Philosophy\",\n    \"Science\"\n  ],\n  \"lifestyleNotes\": \"Consistent circadian rhythm target\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/lifestyle",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "lifestyle"
+              ]
+            },
+            "description": "Creates or updates daily routine, hobbies, and lifestyle information."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"lifestyle\": {\n    \"work_mode\": \"hybrid\",\n    \"dietary_preference\": \"Mediterranean\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Personal Goal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.goal && jsonData.goal.id) {",
+                  "    pm.environment.set(\"goal_id\", jsonData.goal.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Pass AWS Solutions Architect Professional Exam\",\n  \"description\": \"Study 10 hours weekly and complete practice exams\",\n  \"category\": \"career\",\n  \"priority\": \"high\",\n  \"targetDate\": \"2026-12-31\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/goals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "goals"
+              ]
+            },
+            "description": "Creates a new personal goal with category (personal, career, health, learning, relationships, lifestyle, other) and priority (low, medium, high)."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"goal\": {\n    \"id\": \"8a9b0c1d-2e3f-4a5b-6c7d-8e9f0a1b2c3d\",\n    \"user_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"title\": \"Pass AWS Solutions Architect Professional Exam\",\n    \"description\": \"Study 10 hours weekly and complete practice exams\",\n    \"category\": \"career\",\n    \"priority\": \"high\",\n    \"target_date\": \"2026-12-31\",\n    \"status\": \"active\",\n    \"created_at\": \"2026-10-19T12:00:00.000Z\",\n    \"updated_at\": \"2026-10-19T12:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Goals",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.length > 0) {",
+                  "    pm.environment.set(\"goal_id\", jsonData.data[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/goals?category=career&priority=high&status=active&page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "goals"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "career",
+                  "description": "Filter by category (personal, career, health, learning, relationships, lifestyle, other)"
+                },
+                {
+                  "key": "priority",
+                  "value": "high",
+                  "description": "Filter by priority (low, medium, high)"
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "Filter by status (active, completed, paused, cancelled)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Lists all personal goals belonging to authenticated user with optional filtering by category, priority, status, and pagination."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"8a9b0c1d-2e3f-4a5b-6c7d-8e9f0a1b2c3d\",\n      \"title\": \"Pass AWS Solutions Architect Professional Exam\",\n      \"category\": \"career\",\n      \"priority\": \"high\",\n      \"status\": \"active\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 1,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Goal By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/goals/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "goals",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{goal_id}}",
+                  "description": "UUID of the goal"
+                }
+              ]
+            },
+            "description": "Retrieves a single personal goal by ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"goal\": {\n    \"id\": \"8a9b0c1d-2e3f-4a5b-6c7d-8e9f0a1b2c3d\",\n    \"title\": \"Pass AWS Solutions Architect Professional Exam\",\n    \"category\": \"career\",\n    \"priority\": \"high\",\n    \"status\": \"active\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Goal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Pass AWS Solutions Architect (Target: 90%+ score)\",\n  \"priority\": \"medium\",\n  \"targetDate\": \"2026-11-30\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/goals/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "goals",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{goal_id}}",
+                  "description": "UUID of the goal to update"
+                }
+              ]
+            },
+            "description": "Updates details of an existing goal."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"goal\": {\n    \"id\": \"8a9b0c1d-2e3f-4a5b-6c7d-8e9f0a1b2c3d\",\n    \"title\": \"Pass AWS Solutions Architect (Target: 90%+ score)\",\n    \"priority\": \"medium\",\n    \"target_date\": \"2026-11-30\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Goal Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profiles/goals/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "goals",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{goal_id}}",
+                  "description": "UUID of the goal"
+                }
+              ]
+            },
+            "description": "Quick status update for a goal (active, completed, paused, cancelled)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"goal\": {\n    \"id\": \"8a9b0c1d-2e3f-4a5b-6c7d-8e9f0a1b2c3d\",\n    \"status\": \"completed\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Goal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/profiles/goals/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "profiles",
+                "goals",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{goal_id}}",
+                  "description": "UUID of the goal to delete"
+                }
+              ]
+            },
+            "description": "Deletes a personal goal permanently."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Goal deleted successfully.\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

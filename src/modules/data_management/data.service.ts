@@ -1,16 +1,82 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { withTransaction } from '../../config/database';
 import { dataRepository } from './data.repository';
 import { settingsService } from '../settings/settings.service';
 
-const EXPORTS_DIR = path.join(process.cwd(), 'storage', 'exports');
+const isServerless = Boolean(
+  process.env.VERCEL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.NOW_REGION
+);
+
+export const getExportsDir = (): string => {
+  if (process.env.STORAGE_DIR) {
+    return path.join(process.env.STORAGE_DIR, 'exports');
+  }
+  if (isServerless) {
+    return path.join(os.tmpdir(), 'storage', 'exports');
+  }
+  return path.join(process.cwd(), 'storage', 'exports');
+};
 
 export class DataService {
   constructor() {
-    if (!fs.existsSync(EXPORTS_DIR)) {
-      fs.mkdirSync(EXPORTS_DIR, { recursive: true });
+    // Avoid synchronous directory creation at module evaluation time.
+    // In Vercel serverless functions, process.cwd() is read-only (/var/task),
+    // so filesystem initialization is performed lazily when writing files.
+  }
+
+  private ensureExportsDir(): string {
+    const primaryDir = getExportsDir();
+    try {
+      if (!fs.existsSync(primaryDir)) {
+        fs.mkdirSync(primaryDir, { recursive: true });
+      }
+      return primaryDir;
+    } catch (err) {
+      // If primaryDir is not writable (e.g. read-only filesystem), fallback to os.tmpdir()
+      const fallbackDir = path.join(os.tmpdir(), 'storage', 'exports');
+      try {
+        if (!fs.existsSync(fallbackDir)) {
+          fs.mkdirSync(fallbackDir, { recursive: true });
+        }
+        return fallbackDir;
+      } catch (fallbackErr) {
+        console.error(`Failed to create exports directory at ${fallbackDir}:`, fallbackErr);
+        throw {
+          status: 500,
+          message: 'Unable to initialize exports storage directory.',
+        };
+      }
     }
+  }
+
+  private resolveExportFilePath(exportId: string): string | null {
+    const fileName = `${exportId}.json`;
+
+    // 1. Check primary/configured storage directory
+    const primaryPath = path.join(getExportsDir(), fileName);
+    if (fs.existsSync(primaryPath)) {
+      return primaryPath;
+    }
+
+    // 2. Check /tmp fallback path
+    const tmpPath = path.join(os.tmpdir(), 'storage', 'exports', fileName);
+    if (fs.existsSync(tmpPath)) {
+      return tmpPath;
+    }
+
+    // 3. Check local development path (only if not serverless)
+    if (!isServerless) {
+      const localPath = path.join(process.cwd(), 'storage', 'exports', fileName);
+      if (fs.existsSync(localPath)) {
+        return localPath;
+      }
+    }
+
+    return null;
   }
 
   // ---------------- EXPORTS ----------------
@@ -67,7 +133,8 @@ export class DataService {
         data: exportData,
       };
 
-      const filePath = path.join(EXPORTS_DIR, `${exportRecord.id}.json`);
+      const exportsDir = this.ensureExportsDir();
+      const filePath = path.join(exportsDir, `${exportRecord.id}.json`);
       fs.writeFileSync(filePath, JSON.stringify(backupContent, null, 2), 'utf-8');
 
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -126,8 +193,8 @@ export class DataService {
       };
     }
 
-    const filePath = path.join(EXPORTS_DIR, `${exportRecord.id}.json`);
-    if (!fs.existsSync(filePath)) {
+    const filePath = this.resolveExportFilePath(exportRecord.id);
+    if (!filePath || !fs.existsSync(filePath)) {
       throw { status: 404, message: 'Export file not found on server.' };
     }
 

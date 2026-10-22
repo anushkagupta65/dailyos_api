@@ -1,16 +1,80 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import crypto from 'node:crypto';
 import { withTransaction, pool } from '../../config/database';
 import { attachmentsRepository } from './attachments.repository';
 
-const ATTACHMENTS_DIR = path.join(process.cwd(), 'storage', 'attachments');
+const isServerless = Boolean(
+  process.env.VERCEL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.NOW_REGION
+);
+
+export const getAttachmentsDir = (): string => {
+  if (process.env.STORAGE_DIR) {
+    return path.join(process.env.STORAGE_DIR, 'attachments');
+  }
+  if (isServerless) {
+    return path.join(os.tmpdir(), 'storage', 'attachments');
+  }
+  return path.join(process.cwd(), 'storage', 'attachments');
+};
 
 export class AttachmentsService {
   constructor() {
-    if (!fs.existsSync(ATTACHMENTS_DIR)) {
-      fs.mkdirSync(ATTACHMENTS_DIR, { recursive: true });
+    // Avoid synchronous directory creation at module evaluation time.
+    // In Vercel serverless functions, process.cwd() is read-only (/var/task),
+    // so filesystem initialization is performed lazily when writing files.
+  }
+
+  private ensureStorageDir(): string {
+    const primaryDir = getAttachmentsDir();
+    try {
+      if (!fs.existsSync(primaryDir)) {
+        fs.mkdirSync(primaryDir, { recursive: true });
+      }
+      return primaryDir;
+    } catch (err) {
+      // If primaryDir is not writable (e.g. read-only filesystem), fallback to os.tmpdir()
+      const fallbackDir = path.join(os.tmpdir(), 'storage', 'attachments');
+      try {
+        if (!fs.existsSync(fallbackDir)) {
+          fs.mkdirSync(fallbackDir, { recursive: true });
+        }
+        return fallbackDir;
+      } catch (fallbackErr) {
+        console.error(`Failed to create attachments directory at ${fallbackDir}:`, fallbackErr);
+        throw {
+          status: 500,
+          message: 'Unable to initialize attachment storage directory.',
+        };
+      }
     }
+  }
+
+  private resolveFilePath(storedFileName: string): string | null {
+    // 1. Check primary/configured storage directory
+    const primaryPath = path.join(getAttachmentsDir(), storedFileName);
+    if (fs.existsSync(primaryPath)) {
+      return primaryPath;
+    }
+
+    // 2. Check /tmp fallback path
+    const tmpPath = path.join(os.tmpdir(), 'storage', 'attachments', storedFileName);
+    if (fs.existsSync(tmpPath)) {
+      return tmpPath;
+    }
+
+    // 3. Check local development path (only if not serverless)
+    if (!isServerless) {
+      const localPath = path.join(process.cwd(), 'storage', 'attachments', storedFileName);
+      if (fs.existsSync(localPath)) {
+        return localPath;
+      }
+    }
+
+    return null;
   }
 
   async uploadAttachment(
@@ -50,7 +114,16 @@ export class AttachmentsService {
     const safeFileName = path.basename(payload.fileName).replace(/[^a-zA-Z0-9._-]/g, '_');
     const attachmentId = crypto.randomUUID();
     const storedFileName = `${attachmentId}_${safeFileName}`;
-    const filePath = path.join(ATTACHMENTS_DIR, storedFileName);
+    const storageDir = this.ensureStorageDir();
+    const filePath = path.join(storageDir, storedFileName);
+
+    if (isServerless) {
+      console.warn(
+        `[STORAGE WARNING] Attachment ${attachmentId} stored temporarily at ephemeral serverless path: ${filePath}. ` +
+        `This file will NOT persist across serverless instance recycles. ` +
+        `Persistent cloud storage (e.g. Supabase Storage or AWS S3) is required for permanent storage in production.`
+      );
+    }
 
     fs.writeFileSync(filePath, buffer);
 
@@ -116,9 +189,9 @@ export class AttachmentsService {
     const attachment = await this.getAttachmentById(userId, id);
     const safeFileName = path.basename(attachment.file_name).replace(/[^a-zA-Z0-9._-]/g, '_');
     const storedFileName = `${attachment.id}_${safeFileName}`;
-    const filePath = path.join(ATTACHMENTS_DIR, storedFileName);
+    const filePath = this.resolveFilePath(storedFileName);
 
-    if (!fs.existsSync(filePath)) {
+    if (!filePath || !fs.existsSync(filePath)) {
       throw { status: 404, message: 'Attachment file not found on disk.' };
     }
 
@@ -147,9 +220,9 @@ export class AttachmentsService {
 
     const safeFileName = path.basename(attachment.file_name).replace(/[^a-zA-Z0-9._-]/g, '_');
     const storedFileName = `${attachment.id}_${safeFileName}`;
-    const filePath = path.join(ATTACHMENTS_DIR, storedFileName);
+    const filePath = this.resolveFilePath(storedFileName);
 
-    if (fs.existsSync(filePath)) {
+    if (filePath && fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
       } catch (err) {

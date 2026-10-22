@@ -12,3 +12,7 @@ dist/
 
 # Vercel
 .vercel
+
+# Storage & Uploads
+storage/
+uploads/

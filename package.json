@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "migrate": "tsx src/database/migrator.ts",
-    "test": "tsx --test tests/run_tests.ts",
+    "test": "tsx --test tests/run_tests.ts tests/commitments_dashboard.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],

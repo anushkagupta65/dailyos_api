@@ -25,6 +25,11 @@ import {
   getCompleteProfile,
 } from './profile.controller';
 import {
+  uploadAttachment,
+  getProfileAttachments,
+} from '../attachments/attachments.controller';
+import { uploadAttachmentSchema } from '../attachments/attachments.validation';
+import {
   personalProfileSchema,
   updatePhotoSchema,
   healthProfileSchema,
@@ -38,6 +43,18 @@ import {
   paginationQuerySchema,
   goalsQuerySchema,
 } from './profile.validation';
+import {
+  getPreferences,
+  createPreferences,
+  updatePreferences,
+  getPrivacySettings,
+  updatePrivacySettings,
+} from '../settings/settings.controller';
+import {
+  createPreferencesSchema,
+  updatePreferencesSchema,
+  updatePrivacySchema,
+} from '../settings/settings.validation';
 
 const router = Router();
 
@@ -51,6 +68,8 @@ router.get('/complete', getCompleteProfile);
 router.get('/personal', getPersonalProfile);
 router.put('/personal', validate({ body: personalProfileSchema }), updatePersonalProfile);
 router.post('/personal/photo', validate({ body: updatePhotoSchema }), updateProfilePhoto);
+router.post('/attachment', validate({ body: uploadAttachmentSchema }), uploadAttachment);
+router.get('/attachments', getProfileAttachments);
 
 // ---------------- HEALTH PROFILE ----------------
 router.get('/health', getHealthProfile);
@@ -79,4 +98,16 @@ router.put('/goals/:id', validate({ params: idParamSchema, body: updateGoalSchem
 router.patch('/goals/:id/status', validate({ params: idParamSchema, body: updateGoalStatusSchema }), updateGoalStatus);
 router.delete('/goals/:id', validate({ params: idParamSchema }), deleteGoal);
 
+// ---------------- PREFERENCES & PRIVACY (PROFILE SETTINGS) ----------------
+router.get('/preferences', getPreferences);
+router.post('/preferences', validate({ body: createPreferencesSchema }), createPreferences);
+router.put('/preferences', validate({ body: updatePreferencesSchema }), updatePreferences);
+router.patch('/preferences', validate({ body: updatePreferencesSchema }), updatePreferences);
+
+router.get('/privacy', getPrivacySettings);
+router.put('/privacy', validate({ body: updatePrivacySchema }), updatePrivacySettings);
+router.patch('/privacy', validate({ body: updatePrivacySchema }), updatePrivacySettings);
+
 export default router;
+
+

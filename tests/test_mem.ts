@@ -35,7 +35,46 @@ const testPgMem = async () => {
 
   console.log('Testing migration execution with pg-mem...');
   db.public.none(sql);
-  console.log('Migration executed successfully in pg-mem!');
+  db.public.none(`
+    CREATE TABLE test_tab (id text, dt date, val text);
+    INSERT INTO test_tab VALUES ('u1', '2026-10-22', 'a');
+  `);
+
+  try {
+    const res = db.public.many(`
+      INSERT INTO test_tab (id, dt, val)
+      SELECT 'u1', '2026-10-22'::date, 'b'
+      WHERE (SELECT count(*) FROM test_tab WHERE id = 'u1' AND dt = '2026-10-22'::date) < 3
+      RETURNING *;
+    `);
+    console.log('Query 1 success:', res);
+  } catch (e: any) {
+    console.log('Query 1 failed:', e.message);
+  }
+
+  try {
+    const res = db.public.many(`
+      INSERT INTO test_tab (id, dt, val)
+      SELECT 'u1', '2026-10-22'::date, 'b'
+      WHERE (SELECT count(*) < 3 FROM test_tab WHERE id = 'u1' AND dt = '2026-10-22'::date)
+      RETURNING *;
+    `);
+    console.log('Query 2 success:', res);
+  } catch (e: any) {
+    console.log('Query 2 failed:', e.message);
+  }
+
+  try {
+    const res = db.public.many(`
+      INSERT INTO test_tab (id, dt, val)
+      SELECT 'u1', '2026-10-22'::date, 'c'
+      WHERE NOT EXISTS (SELECT 1 FROM test_tab WHERE id = 'u1' AND dt = '2026-10-22'::date OFFSET 2)
+      RETURNING *;
+    `);
+    console.log('Query 3 success:', res);
+  } catch (e: any) {
+    console.log('Query 3 failed:', e.message);
+  }
 };
 
 testPgMem().catch(console.error);

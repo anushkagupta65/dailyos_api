@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { notesService } from './notes.service';
+import { sendSuccess } from '../../utils/response';
 
 const listFilters = (query: any) => ({
   noteType: query.noteType,
@@ -21,7 +22,11 @@ export const createNote = async (
 ): Promise<void> => {
   try {
     const note = await notesService.createNote(req.user!.id, req.body);
-    res.status(201).json({ message: 'Note created successfully.', note });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Note created successfully.',
+      data: { note },
+    });
   } catch (err) {
     next(err);
   }
@@ -34,7 +39,12 @@ export const getNotes = async (
 ): Promise<void> => {
   try {
     const result = await notesService.getNotes(req.user!.id, listFilters(res.locals.validatedQuery));
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Notes retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -48,7 +58,12 @@ export const searchNotes = async (
   try {
     const query = res.locals.validatedQuery;
     const result = await notesService.searchNotes(req.user!.id, { ...listFilters(query), q: query.q });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Notes search results retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -61,7 +76,11 @@ export const getNoteById = async (
 ): Promise<void> => {
   try {
     const note = await notesService.getNoteById(req.user!.id, req.params.id as string);
-    res.status(200).json({ note });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Note retrieved successfully.',
+      data: { note },
+    });
   } catch (err) {
     next(err);
   }
@@ -74,7 +93,11 @@ export const updateNote = async (
 ): Promise<void> => {
   try {
     const note = await notesService.updateNote(req.user!.id, req.params.id as string, req.body);
-    res.status(200).json({ message: 'Note updated successfully.', note });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Note updated successfully.',
+      data: { note },
+    });
   } catch (err) {
     next(err);
   }
@@ -87,7 +110,11 @@ export const deleteNote = async (
 ): Promise<void> => {
   try {
     const result = await notesService.deleteNote(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Note deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -100,7 +127,11 @@ export const pinNote = async (
 ): Promise<void> => {
   try {
     const note = await notesService.setPinned(req.user!.id, req.params.id as string, req.body.isPinned);
-    res.status(200).json({ message: `Note ${note!.is_pinned ? 'pinned' : 'unpinned'} successfully.`, note });
+    sendSuccess(res, {
+      status: 200,
+      message: `Note ${note!.is_pinned ? 'pinned' : 'unpinned'} successfully.`,
+      data: { note },
+    });
   } catch (err) {
     next(err);
   }
@@ -113,9 +144,10 @@ export const archiveNote = async (
 ): Promise<void> => {
   try {
     const note = await notesService.setArchived(req.user!.id, req.params.id as string, req.body.archived);
-    res.status(200).json({
+    sendSuccess(res, {
+      status: 200,
       message: `Note ${note!.archived_at ? 'archived' : 'unarchived'} successfully.`,
-      note,
+      data: { note },
     });
   } catch (err) {
     next(err);
@@ -134,7 +166,11 @@ export const setNoteTags = async (
       req.body.tags,
       req.body.mode
     );
-    res.status(200).json({ message: 'Note tags updated successfully.', note });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Note tags updated successfully.',
+      data: { note },
+    });
   } catch (err) {
     next(err);
   }
@@ -148,7 +184,11 @@ export const getNoteCategories = async (
 ): Promise<void> => {
   try {
     const categories = await notesService.getCategories(req.user!.id);
-    res.status(200).json({ categories });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Note categories retrieved successfully.',
+      data: { categories },
+    });
   } catch (err) {
     next(err);
   }
@@ -161,7 +201,11 @@ export const createNoteCategory = async (
 ): Promise<void> => {
   try {
     const category = await notesService.createCategory(req.user!.id, req.body);
-    res.status(201).json({ message: 'Note category created successfully.', category });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Note category created successfully.',
+      data: { category },
+    });
   } catch (err) {
     next(err);
   }
@@ -174,7 +218,11 @@ export const updateNoteCategory = async (
 ): Promise<void> => {
   try {
     const category = await notesService.updateCategory(req.user!.id, req.params.id as string, req.body);
-    res.status(200).json({ message: 'Note category updated successfully.', category });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Note category updated successfully.',
+      data: { category },
+    });
   } catch (err) {
     next(err);
   }
@@ -187,7 +235,11 @@ export const deleteNoteCategory = async (
 ): Promise<void> => {
   try {
     const result = await notesService.deleteCategory(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Note category deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }

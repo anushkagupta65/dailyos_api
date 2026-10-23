@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt';
 import { pool } from '../config/database';
+import { sendError } from '../utils/response';
 
 export interface AuthenticatedUser {
   id: string;
@@ -35,7 +36,7 @@ export const authenticate = async (
     }
 
     if (!token) {
-      res.status(401).json({ message: 'Authentication required. No token provided.' });
+      sendError(res, { status: 401, message: 'Authentication required. No token provided.' });
       return;
     }
 
@@ -44,10 +45,10 @@ export const authenticate = async (
       payload = verifyAccessToken(token);
     } catch (err: any) {
       if (err.name === 'TokenExpiredError') {
-        res.status(401).json({ message: 'Access token has expired.' });
+        sendError(res, { status: 401, message: 'Access token has expired.' });
         return;
       }
-      res.status(401).json({ message: 'Invalid access token.' });
+      sendError(res, { status: 401, message: 'Invalid access token.' });
       return;
     }
 
@@ -59,19 +60,19 @@ export const authenticate = async (
     );
 
     if (rows.length === 0) {
-      res.status(401).json({ message: 'User not found or account no longer exists.' });
+      sendError(res, { status: 401, message: 'User not found or account no longer exists.' });
       return;
     }
 
     const user = rows[0];
 
     if (user.status === 'suspended') {
-      res.status(403).json({ message: 'Your account has been suspended. Please contact support.' });
+      sendError(res, { status: 403, message: 'Your account has been suspended. Please contact support.' });
       return;
     }
 
     if (user.status === 'deleted') {
-      res.status(403).json({ message: 'This account has been deleted.' });
+      sendError(res, { status: 403, message: 'This account has been deleted.' });
       return;
     }
 

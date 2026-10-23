@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
+import { sendError } from '../utils/response';
 
 export const notFound = (req: Request, res: Response) => {
-  res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
+  sendError(res, {
+    status: 404,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
 };

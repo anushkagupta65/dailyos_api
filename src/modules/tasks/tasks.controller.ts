@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { tasksService } from './tasks.service';
+import { sendSuccess } from '../../utils/response';
 
 // ---------------- TASKS ----------------
 export const createTask = async (
@@ -9,7 +10,11 @@ export const createTask = async (
 ): Promise<void> => {
   try {
     const task = await tasksService.createTask(req.user!.id, req.body);
-    res.status(201).json({ message: 'Task created successfully.', task });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Task created successfully.',
+      data: { task },
+    });
   } catch (err) {
     next(err);
   }
@@ -37,7 +42,12 @@ export const getTasks = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 10,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Tasks retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -50,7 +60,11 @@ export const getTaskById = async (
 ): Promise<void> => {
   try {
     const task = await tasksService.getTaskById(req.user!.id, req.params.id as string);
-    res.status(200).json({ task });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Task retrieved successfully.',
+      data: { task },
+    });
   } catch (err) {
     next(err);
   }
@@ -63,7 +77,11 @@ export const updateTask = async (
 ): Promise<void> => {
   try {
     const task = await tasksService.updateTask(req.user!.id, req.params.id as string, req.body);
-    res.status(200).json({ message: 'Task updated successfully.', task });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Task updated successfully.',
+      data: { task },
+    });
   } catch (err) {
     next(err);
   }
@@ -81,9 +99,10 @@ export const updateTaskStatus = async (
       req.body.status,
       req.body.note
     );
-    res.status(200).json({
+    sendSuccess(res, {
+      status: 200,
       message: changed ? 'Task status updated successfully.' : 'Task status is unchanged.',
-      task,
+      data: { task },
     });
   } catch (err) {
     next(err);
@@ -97,7 +116,11 @@ export const deleteTask = async (
 ): Promise<void> => {
   try {
     const result = await tasksService.deleteTask(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Task deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -111,7 +134,11 @@ export const createSubtask = async (
 ): Promise<void> => {
   try {
     const subtask = await tasksService.createSubtask(req.user!.id, req.params.id as string, req.body);
-    res.status(201).json({ message: 'Subtask created successfully.', subtask });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Subtask created successfully.',
+      data: { subtask },
+    });
   } catch (err) {
     next(err);
   }
@@ -129,7 +156,11 @@ export const updateSubtask = async (
       req.params.subtaskId as string,
       req.body
     );
-    res.status(200).json({ message: 'Subtask updated successfully.', subtask });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Subtask updated successfully.',
+      data: { subtask },
+    });
   } catch (err) {
     next(err);
   }
@@ -146,7 +177,11 @@ export const deleteSubtask = async (
       req.params.id as string,
       req.params.subtaskId as string
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Subtask deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -160,7 +195,11 @@ export const getStatusHistory = async (
 ): Promise<void> => {
   try {
     const history = await tasksService.getStatusHistory(req.user!.id, req.params.id as string);
-    res.status(200).json({ history });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Task status history retrieved successfully.',
+      data: { history },
+    });
   } catch (err) {
     next(err);
   }
@@ -178,7 +217,11 @@ export const createRecurrence = async (
       ...req.body,
       taskId,
     });
-    res.status(201).json({ message: 'Recurring task schedule created successfully.', recurrence });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Recurring task schedule created successfully.',
+      data: { recurrence },
+    });
   } catch (err) {
     next(err);
   }
@@ -192,7 +235,12 @@ export const getRecurrences = async (
   try {
     const query = res.locals.validatedQuery || req.query;
     const result = await tasksService.listRecurrences(req.user!.id, query);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Recurring task schedules retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -205,7 +253,11 @@ export const getRecurrenceById = async (
 ): Promise<void> => {
   try {
     const recurrence = await tasksService.getRecurrenceById(req.user!.id, req.params.id as string);
-    res.status(200).json({ recurrence });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Recurring task schedule retrieved successfully.',
+      data: { recurrence },
+    });
   } catch (err) {
     next(err);
   }
@@ -218,7 +270,11 @@ export const getTaskRecurrence = async (
 ): Promise<void> => {
   try {
     const recurrence = await tasksService.getRecurrenceByTaskId(req.user!.id, req.params.id as string);
-    res.status(200).json({ recurrence });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Task recurrence retrieved successfully.',
+      data: { recurrence },
+    });
   } catch (err) {
     next(err);
   }
@@ -235,7 +291,11 @@ export const updateRecurrence = async (
       req.params.id as string,
       req.body
     );
-    res.status(200).json({ message: 'Recurring task schedule updated successfully.', recurrence });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Recurring task schedule updated successfully.',
+      data: { recurrence },
+    });
   } catch (err) {
     next(err);
   }
@@ -248,7 +308,11 @@ export const pauseRecurrence = async (
 ): Promise<void> => {
   try {
     const result = await tasksService.pauseRecurrence(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Recurring task schedule paused successfully.',
+      data: { recurrence: result.recurrence },
+    });
   } catch (err) {
     next(err);
   }
@@ -261,7 +325,11 @@ export const resumeRecurrence = async (
 ): Promise<void> => {
   try {
     const result = await tasksService.resumeRecurrence(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Recurring task schedule resumed successfully.',
+      data: { recurrence: result.recurrence },
+    });
   } catch (err) {
     next(err);
   }
@@ -274,7 +342,11 @@ export const deleteRecurrence = async (
 ): Promise<void> => {
   try {
     const result = await tasksService.deleteRecurrence(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Recurring task schedule deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -287,7 +359,11 @@ export const generateRecurrenceOccurrence = async (
 ): Promise<void> => {
   try {
     const result = await tasksService.generateOccurrence(req.user!.id, req.params.id as string);
-    res.status(201).json(result);
+    sendSuccess(res, {
+      status: 201,
+      message: result.message || 'Task occurrence generated successfully.',
+      data: { task: result.task, recurrence: result.recurrence },
+    });
   } catch (err) {
     next(err);
   }
@@ -300,7 +376,11 @@ export const getRecurrenceHistory = async (
 ): Promise<void> => {
   try {
     const result = await tasksService.getRecurrenceHistory(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Recurrence occurrence history retrieved successfully.',
+      data: result,
+    });
   } catch (err) {
     next(err);
   }

@@ -1,6 +1,36 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import request from 'supertest';
+import supertest from 'supertest';
+
+const wrap = (test: any) => {
+  const origThen = test.then.bind(test);
+  test.then = (onfulfilled: any, onrejected: any) => {
+    return origThen((res: any) => {
+      if (res && res.body && typeof res.body === 'object' && res.body.data && typeof res.body.data === 'object' && !Array.isArray(res.body.data)) {
+        for (const [k, v] of Object.entries(res.body.data)) {
+          if (!(k in res.body)) {
+            res.body[k] = v;
+          }
+        }
+      }
+      return onfulfilled ? onfulfilled(res) : res;
+    }, onrejected);
+  };
+  return test;
+};
+
+const request = (appInstance: any) => {
+  const inst = supertest(appInstance);
+  return new Proxy(inst, {
+    get(target: any, prop: string) {
+      const orig = target[prop];
+      if (typeof orig === 'function') {
+        return (...args: any[]) => wrap(orig.apply(target, args));
+      }
+      return orig;
+    },
+  });
+};
 import { newDb, DataType } from 'pg-mem';
 import crypto from 'node:crypto';
 import fs from 'node:fs';

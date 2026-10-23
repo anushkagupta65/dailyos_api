@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { learningService } from './learning.service';
 import { getRequestTimezone } from '../commitments/commitments.controller';
+import { sendSuccess } from '../../utils/response';
 
 const listFilters = (query: any) => ({
   category: query.category,
@@ -22,7 +23,11 @@ export const createLearning = async (
 ): Promise<void> => {
   try {
     const learning = await learningService.createEntry(req.user!.id, req.body, getRequestTimezone(req, res));
-    res.status(201).json({ message: 'Learning entry created successfully.', learning });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Learning entry created successfully.',
+      data: { learning },
+    });
   } catch (err) {
     next(err);
   }
@@ -35,7 +40,12 @@ export const getLearningEntries = async (
 ): Promise<void> => {
   try {
     const result = await learningService.getEntries(req.user!.id, listFilters(res.locals.validatedQuery));
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Learning entries retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -49,7 +59,12 @@ export const searchLearning = async (
   try {
     const query = res.locals.validatedQuery;
     const result = await learningService.searchEntries(req.user!.id, { ...listFilters(query), q: query.q });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Learning search results retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -74,7 +89,12 @@ export const getUpcomingReviews = async (
       },
       getRequestTimezone(req, res)
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Upcoming learning reviews retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -91,7 +111,11 @@ export const getLearningById = async (
       req.params.id as string,
       getRequestTimezone(req, res)
     );
-    res.status(200).json({ learning });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Learning entry retrieved successfully.',
+      data: { learning },
+    });
   } catch (err) {
     next(err);
   }
@@ -104,7 +128,11 @@ export const updateLearning = async (
 ): Promise<void> => {
   try {
     const learning = await learningService.updateEntry(req.user!.id, req.params.id as string, req.body);
-    res.status(200).json({ message: 'Learning entry updated successfully.', learning });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Learning entry updated successfully.',
+      data: { learning },
+    });
   } catch (err) {
     next(err);
   }
@@ -117,7 +145,11 @@ export const deleteLearning = async (
 ): Promise<void> => {
   try {
     const result = await learningService.deleteEntry(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Learning entry deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -135,7 +167,11 @@ export const createReview = async (
       req.params.id as string,
       req.body
     );
-    res.status(201).json({ message: 'Learning review added successfully.', review, learning });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Learning review added successfully.',
+      data: { review, learning },
+    });
   } catch (err) {
     next(err);
   }
@@ -148,7 +184,11 @@ export const getReviews = async (
 ): Promise<void> => {
   try {
     const reviews = await learningService.getReviews(req.user!.id, req.params.id as string);
-    res.status(200).json({ reviews });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Learning reviews retrieved successfully.',
+      data: { reviews },
+    });
   } catch (err) {
     next(err);
   }
@@ -166,7 +206,11 @@ export const updateReview = async (
       req.params.reviewId as string,
       req.body
     );
-    res.status(200).json({ message: 'Learning review updated successfully.', review });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Learning review updated successfully.',
+      data: { review },
+    });
   } catch (err) {
     next(err);
   }
@@ -183,7 +227,11 @@ export const deleteReview = async (
       req.params.id as string,
       req.params.reviewId as string
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Learning review deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }

@@ -25,12 +25,19 @@ export const buildUpdateSet = (
   return { sets, values };
 };
 
-export const paginate = (page: number, limit: number, total: number) => ({
-  page,
-  limit,
-  total,
-  totalPages: Math.ceil(total / limit),
-});
+export const paginate = (page: number, limit: number, total: number) => {
+  const safeLimit = limit > 0 ? limit : 1;
+  const totalPages = Math.ceil(total / safeLimit) || 1;
+  return {
+    totalItems: total,
+    totalPages,
+    currentPage: page,
+    pageSize: limit,
+    page,
+    limit,
+    total,
+  };
+};
 
 /**
  * Escapes LIKE wildcards in user input and wraps it for a contains-match.

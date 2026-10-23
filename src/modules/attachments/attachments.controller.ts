@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { attachmentsService } from './attachments.service';
+import { sendSuccess } from '../../utils/response';
 
 export const uploadAttachment = async (
   req: Request,
@@ -8,7 +9,11 @@ export const uploadAttachment = async (
 ): Promise<void> => {
   try {
     const attachment = await attachmentsService.uploadAttachment(req.user!.id, req.body);
-    res.status(201).json({ message: 'Attachment uploaded successfully.', attachment });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Attachment uploaded successfully.',
+      data: { attachment },
+    });
   } catch (err) {
     next(err);
   }
@@ -24,7 +29,11 @@ export const getAttachmentById = async (
       req.user!.id,
       req.params.id as string
     );
-    res.status(200).json({ attachment });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Attachment retrieved successfully.',
+      data: { attachment },
+    });
   } catch (err) {
     next(err);
   }
@@ -60,7 +69,11 @@ export const getAttachmentsByEntity = async (
       entityType as string,
       entityId as string
     );
-    res.status(200).json({ attachments });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Attachments retrieved successfully.',
+      data: { attachments },
+    });
   } catch (err) {
     next(err);
   }
@@ -74,7 +87,12 @@ export const listAttachments = async (
   try {
     const query = res.locals.validatedQuery || req.query;
     const result = await attachmentsService.listAttachments(req.user!.id, query);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Attachments retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -90,7 +108,11 @@ export const deleteAttachment = async (
       req.user!.id,
       req.params.id as string
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Attachment deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -107,7 +129,11 @@ export const getProfileAttachments = async (
       'profile',
       req.user!.id
     );
-    res.status(200).json({ attachments });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Profile attachments retrieved successfully.',
+      data: { attachments },
+    });
   } catch (err) {
     next(err);
   }

@@ -9,6 +9,11 @@ import { errorHandler } from './middlewares/errorHandler';
 
 const app = express();
 
+app.use((req, _res, next) => {
+  (req as any).requestedTime = new Date().toISOString();
+  next();
+});
+
 app.use(helmet());
 app.use(cors({ origin: env.corsOrigin, credentials: true }));
 app.use(cookieParser());

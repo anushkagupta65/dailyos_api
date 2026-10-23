@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { reviewsService } from './reviews.service';
+import { sendSuccess } from '../../utils/response';
 
 // ---------------- REVIEWS ----------------
 export const createReview = async (
@@ -9,7 +10,11 @@ export const createReview = async (
 ): Promise<void> => {
   try {
     const review = await reviewsService.createReview(req.user!.id, req.body);
-    res.status(201).json({ message: 'Review created successfully.', review });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Review created successfully.',
+      data: { review },
+    });
   } catch (err) {
     next(err);
   }
@@ -30,7 +35,12 @@ export const getReviews = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 10,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Reviews retrieved successfully.',
+      data: { reviews: result.reviews },
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -43,7 +53,11 @@ export const getReviewById = async (
 ): Promise<void> => {
   try {
     const review = await reviewsService.getReviewById(req.user!.id, req.params.id as string);
-    res.status(200).json({ review });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Review retrieved successfully.',
+      data: { review },
+    });
   } catch (err) {
     next(err);
   }
@@ -56,7 +70,11 @@ export const updateReview = async (
 ): Promise<void> => {
   try {
     const review = await reviewsService.updateReview(req.user!.id, req.params.id as string, req.body);
-    res.status(200).json({ message: 'Review updated successfully.', review });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Review updated successfully.',
+      data: { review },
+    });
   } catch (err) {
     next(err);
   }
@@ -69,7 +87,11 @@ export const completeReview = async (
 ): Promise<void> => {
   try {
     const review = await reviewsService.completeReview(req.user!.id, req.params.id as string);
-    res.status(200).json({ message: 'Review completed successfully.', review });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Review completed successfully.',
+      data: { review },
+    });
   } catch (err) {
     next(err);
   }
@@ -82,7 +104,11 @@ export const deleteReview = async (
 ): Promise<void> => {
   try {
     const result = await reviewsService.deleteReview(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Review deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -97,7 +123,11 @@ export const addHabitRatings = async (
   try {
     const ratings = Array.isArray(req.body.ratings) ? req.body.ratings : [req.body];
     const habitRatings = await reviewsService.addHabitRatings(req.user!.id, req.params.id as string, ratings);
-    res.status(200).json({ message: 'Habit ratings updated successfully.', habitRatings });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit ratings updated successfully.',
+      data: { habitRatings },
+    });
   } catch (err) {
     next(err);
   }
@@ -111,7 +141,11 @@ export const addTaskRatings = async (
   try {
     const ratings = Array.isArray(req.body.ratings) ? req.body.ratings : [req.body];
     const taskRatings = await reviewsService.addTaskRatings(req.user!.id, req.params.id as string, ratings);
-    res.status(200).json({ message: 'Task ratings updated successfully.', taskRatings });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Task ratings updated successfully.',
+      data: { taskRatings },
+    });
   } catch (err) {
     next(err);
   }
@@ -124,7 +158,11 @@ export const getRatings = async (
 ): Promise<void> => {
   try {
     const ratings = await reviewsService.getRatings(req.user!.id, req.params.id as string);
-    res.status(200).json(ratings);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Review ratings retrieved successfully.',
+      data: ratings,
+    });
   } catch (err) {
     next(err);
   }
@@ -138,7 +176,11 @@ export const createAction = async (
 ): Promise<void> => {
   try {
     const action = await reviewsService.createAction(req.user!.id, req.params.id as string, req.body);
-    res.status(201).json({ message: 'Action created successfully.', action });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Action created successfully.',
+      data: { action },
+    });
   } catch (err) {
     next(err);
   }
@@ -160,7 +202,12 @@ export const getActions = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 10,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Review actions retrieved successfully.',
+      data: { actions: result.actions },
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -181,7 +228,12 @@ export const getOpenActions = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 10,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Open review actions retrieved successfully.',
+      data: { actions: result.actions },
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -194,7 +246,11 @@ export const getActionById = async (
 ): Promise<void> => {
   try {
     const action = await reviewsService.getActionById(req.user!.id, req.params.actionId as string);
-    res.status(200).json({ action });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Action retrieved successfully.',
+      data: { action },
+    });
   } catch (err) {
     next(err);
   }
@@ -207,7 +263,11 @@ export const updateAction = async (
 ): Promise<void> => {
   try {
     const action = await reviewsService.updateAction(req.user!.id, req.params.actionId as string, req.body);
-    res.status(200).json({ message: 'Action updated successfully.', action });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Action updated successfully.',
+      data: { action },
+    });
   } catch (err) {
     next(err);
   }
@@ -220,7 +280,11 @@ export const updateActionStatus = async (
 ): Promise<void> => {
   try {
     const action = await reviewsService.updateActionStatus(req.user!.id, req.params.actionId as string, req.body.status);
-    res.status(200).json({ message: 'Action status updated successfully.', action });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Action status updated successfully.',
+      data: { action },
+    });
   } catch (err) {
     next(err);
   }
@@ -233,7 +297,11 @@ export const deleteAction = async (
 ): Promise<void> => {
   try {
     const result = await reviewsService.deleteAction(req.user!.id, req.params.actionId as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Action deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -253,7 +321,11 @@ export const generateSummary = async (
       startDate: query.startDate,
       endDate: query.endDate,
     });
-    res.status(200).json(summary);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Review summary generated successfully.',
+      data: { summary },
+    });
   } catch (err) {
     next(err);
   }

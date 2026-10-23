@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { notificationsService } from './notifications.service';
+import { sendSuccess } from '../../utils/response';
 
 export const createNotification = async (
   req: Request,
@@ -8,7 +9,11 @@ export const createNotification = async (
 ): Promise<void> => {
   try {
     const result = await notificationsService.createNotification(req.user!.id, req.body);
-    res.status(201).json(result);
+    sendSuccess(res, {
+      status: 201,
+      message: result.message || 'Notification created successfully.',
+      data: { notification: result.notification },
+    });
   } catch (err) {
     next(err);
   }
@@ -22,7 +27,12 @@ export const listNotifications = async (
   try {
     const query = res.locals.validatedQuery || req.query;
     const result = await notificationsService.listNotifications(req.user!.id, query);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Notifications retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -38,7 +48,11 @@ export const getNotificationById = async (
       req.user!.id,
       req.params.id as string
     );
-    res.status(200).json({ notification });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Notification retrieved successfully.',
+      data: { notification },
+    });
   } catch (err) {
     next(err);
   }
@@ -51,7 +65,11 @@ export const getUnreadCount = async (
 ): Promise<void> => {
   try {
     const result = await notificationsService.getUnreadCount(req.user!.id);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Unread count retrieved successfully.',
+      data: result,
+    });
   } catch (err) {
     next(err);
   }
@@ -64,7 +82,11 @@ export const markAsRead = async (
 ): Promise<void> => {
   try {
     const result = await notificationsService.markAsRead(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Notification marked as read successfully.',
+      data: { notification: result.notification },
+    });
   } catch (err) {
     next(err);
   }
@@ -77,7 +99,11 @@ export const markAllAsRead = async (
 ): Promise<void> => {
   try {
     const result = await notificationsService.markAllAsRead(req.user!.id);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'All notifications marked as read successfully.',
+      data: { updatedCount: result.updatedCount },
+    });
   } catch (err) {
     next(err);
   }
@@ -93,7 +119,11 @@ export const deleteNotification = async (
       req.user!.id,
       req.params.id as string
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Notification deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -106,7 +136,11 @@ export const deleteAllRead = async (
 ): Promise<void> => {
   try {
     const result = await notificationsService.deleteAllRead(req.user!.id);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Read notifications deleted successfully.',
+      data: { deletedCount: result.deletedCount },
+    });
   } catch (err) {
     next(err);
   }
@@ -119,7 +153,11 @@ export const getPreferences = async (
 ): Promise<void> => {
   try {
     const preferences = await notificationsService.getPreferences(req.user!.id);
-    res.status(200).json({ preferences });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Notification preferences retrieved successfully.',
+      data: { preferences },
+    });
   } catch (err) {
     next(err);
   }
@@ -132,7 +170,11 @@ export const updatePreferences = async (
 ): Promise<void> => {
   try {
     const preferences = await notificationsService.updatePreferences(req.user!.id, req.body);
-    res.status(200).json({ message: 'Notification preferences updated successfully.', preferences });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Notification preferences updated successfully.',
+      data: { preferences },
+    });
   } catch (err) {
     next(err);
   }
@@ -146,7 +188,11 @@ export const generateReminders = async (
   try {
     const timezone = (req.query.timezone as string) || 'UTC';
     const result = await notificationsService.generateReminders(req.user!.id, timezone);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Reminders generated successfully.',
+      data: result,
+    });
   } catch (err) {
     next(err);
   }

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { env } from '../config/env';
+import { sendError } from '../utils/response';
 
 export interface AppError extends Error {
   status?: number;
@@ -18,15 +19,14 @@ export const errorHandler = (
     console.error('Unhandled server error:', err);
   }
 
-  const responseBody: Record<string, any> = {
-    message: status === 500 && env.nodeEnv === 'production'
+  const message =
+    status === 500 && env.nodeEnv === 'production'
       ? 'Internal server error'
-      : (err.message || 'An unexpected error occurred'),
-  };
+      : (err.message || 'An unexpected error occurred');
 
-  if (err.errors) {
-    responseBody.errors = err.errors;
-  }
-
-  res.status(status).json(responseBody);
+  sendError(res, {
+    status,
+    message,
+    errors: err.errors,
+  });
 };

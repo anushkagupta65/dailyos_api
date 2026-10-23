@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { commitmentsService } from './commitments.service';
 import { resolveTimezone } from '../../utils/date';
+import { sendSuccess } from '../../utils/response';
 
 /**
  * The user's timezone comes from `?timezone=` or the `X-Timezone` header (IANA name),
@@ -20,7 +21,11 @@ export const getCategories = async (
 ): Promise<void> => {
   try {
     const categories = await commitmentsService.getCategories(req.user!.id);
-    res.status(200).json({ categories });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit categories retrieved successfully.',
+      data: { categories },
+    });
   } catch (err) {
     next(err);
   }
@@ -33,7 +38,11 @@ export const createCategory = async (
 ): Promise<void> => {
   try {
     const category = await commitmentsService.createCategory(req.user!.id, req.body);
-    res.status(201).json({ message: 'Habit category created successfully.', category });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Habit category created successfully.',
+      data: { category },
+    });
   } catch (err) {
     next(err);
   }
@@ -50,7 +59,11 @@ export const updateCategory = async (
       req.params.id as string,
       req.body
     );
-    res.status(200).json({ message: 'Habit category updated successfully.', category });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit category updated successfully.',
+      data: { category },
+    });
   } catch (err) {
     next(err);
   }
@@ -63,7 +76,11 @@ export const deleteCategory = async (
 ): Promise<void> => {
   try {
     const result = await commitmentsService.deleteCategory(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Habit category deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -81,7 +98,11 @@ export const createHabit = async (
       req.body,
       getRequestTimezone(req, res)
     );
-    res.status(201).json({ message: 'Habit created successfully.', habit });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Habit created successfully.',
+      data: { habit },
+    });
   } catch (err) {
     next(err);
   }
@@ -103,7 +124,12 @@ export const getHabits = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 50,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habits retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -120,7 +146,11 @@ export const getHabitById = async (
       req.params.id as string,
       getRequestTimezone(req, res)
     );
-    res.status(200).json({ habit });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit retrieved successfully.',
+      data: { habit },
+    });
   } catch (err) {
     next(err);
   }
@@ -137,7 +167,11 @@ export const updateHabit = async (
       req.params.id as string,
       req.body
     );
-    res.status(200).json({ message: 'Habit updated successfully.', habit });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit updated successfully.',
+      data: { habit },
+    });
   } catch (err) {
     next(err);
   }
@@ -154,7 +188,11 @@ export const updateHabitStatus = async (
       req.params.id as string,
       req.body.status
     );
-    res.status(200).json({ message: 'Habit status updated successfully.', habit });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit status updated successfully.',
+      data: { habit },
+    });
   } catch (err) {
     next(err);
   }
@@ -167,7 +205,11 @@ export const deleteHabit = async (
 ): Promise<void> => {
   try {
     const result = await commitmentsService.deleteHabit(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Habit deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -185,7 +227,11 @@ export const getSchedules = async (
       req.params.id as string,
       getRequestTimezone(req, res)
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit schedules retrieved successfully.',
+      data: result,
+    });
   } catch (err) {
     next(err);
   }
@@ -203,7 +249,11 @@ export const createSchedule = async (
       req.body,
       getRequestTimezone(req, res)
     );
-    res.status(201).json({ message: 'Habit schedule created successfully.', schedule });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Habit schedule created successfully.',
+      data: { schedule },
+    });
   } catch (err) {
     next(err);
   }
@@ -221,7 +271,11 @@ export const updateSchedule = async (
       req.params.scheduleId as string,
       req.body
     );
-    res.status(200).json({ message: 'Habit schedule updated successfully.', schedule });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit schedule updated successfully.',
+      data: { schedule },
+    });
   } catch (err) {
     next(err);
   }
@@ -238,7 +292,11 @@ export const deleteSchedule = async (
       req.params.id as string,
       req.params.scheduleId as string
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Habit schedule deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -257,7 +315,11 @@ export const createLog = async (
       req.body,
       getRequestTimezone(req, res)
     );
-    res.status(201).json({ message: 'Habit log created successfully.', log });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Habit log created successfully.',
+      data: { log },
+    });
   } catch (err) {
     next(err);
   }
@@ -277,7 +339,12 @@ export const getHabitLogs = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 31,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit logs retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -302,7 +369,13 @@ export const getAllLogs = async (
       },
       getRequestTimezone(req, res)
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'All habit logs retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+      extra: { range: result.range },
+    });
   } catch (err) {
     next(err);
   }
@@ -320,7 +393,11 @@ export const updateLog = async (
       req.params.logId as string,
       req.body
     );
-    res.status(200).json({ message: 'Habit log updated successfully.', log });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit log updated successfully.',
+      data: { log },
+    });
   } catch (err) {
     next(err);
   }
@@ -337,7 +414,11 @@ export const deleteLog = async (
       req.params.id as string,
       req.params.logId as string
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Habit log deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -362,7 +443,11 @@ export const getProgress = async (
       },
       getRequestTimezone(req, res)
     );
-    res.status(200).json({ progress });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit progress retrieved successfully.',
+      data: { progress },
+    });
   } catch (err) {
     next(err);
   }
@@ -376,7 +461,11 @@ export const getFlexibility = async (
 ): Promise<void> => {
   try {
     const flexibility = await commitmentsService.getFlexibility(req.user!.id, req.params.id as string);
-    res.status(200).json({ flexibility });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit flexibility retrieved successfully.',
+      data: { flexibility },
+    });
   } catch (err) {
     next(err);
   }
@@ -393,7 +482,11 @@ export const createFlexibility = async (
       req.params.id as string,
       req.body
     );
-    res.status(201).json({ message: 'Flexibility settings created successfully.', flexibility });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Flexibility settings created successfully.',
+      data: { flexibility },
+    });
   } catch (err) {
     next(err);
   }
@@ -410,7 +503,11 @@ export const updateFlexibility = async (
       req.params.id as string,
       req.body
     );
-    res.status(200).json({ message: 'Flexibility settings updated successfully.', flexibility });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Flexibility settings updated successfully.',
+      data: { flexibility },
+    });
   } catch (err) {
     next(err);
   }
@@ -423,7 +520,11 @@ export const deleteFlexibility = async (
 ): Promise<void> => {
   try {
     const result = await commitmentsService.deleteFlexibility(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Flexibility settings deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -437,7 +538,11 @@ export const getReminders = async (
 ): Promise<void> => {
   try {
     const reminders = await commitmentsService.getReminders(req.user!.id, req.params.id as string);
-    res.status(200).json({ reminders });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit reminders retrieved successfully.',
+      data: { reminders },
+    });
   } catch (err) {
     next(err);
   }
@@ -454,7 +559,11 @@ export const createReminder = async (
       req.params.id as string,
       req.body
     );
-    res.status(201).json({ message: 'Habit reminder created successfully.', reminder });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Habit reminder created successfully.',
+      data: { reminder },
+    });
   } catch (err) {
     next(err);
   }
@@ -472,7 +581,11 @@ export const updateReminder = async (
       req.params.reminderId as string,
       req.body
     );
-    res.status(200).json({ message: 'Habit reminder updated successfully.', reminder });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Habit reminder updated successfully.',
+      data: { reminder },
+    });
   } catch (err) {
     next(err);
   }
@@ -490,9 +603,10 @@ export const toggleReminder = async (
       req.params.reminderId as string,
       { isEnabled: req.body.isEnabled }
     );
-    res.status(200).json({
+    sendSuccess(res, {
+      status: 200,
       message: `Habit reminder ${reminder.is_enabled ? 'enabled' : 'disabled'} successfully.`,
-      reminder,
+      data: { reminder },
     });
   } catch (err) {
     next(err);
@@ -510,7 +624,11 @@ export const deleteReminder = async (
       req.params.id as string,
       req.params.reminderId as string
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Habit reminder deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }

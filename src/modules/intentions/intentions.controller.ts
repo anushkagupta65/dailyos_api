@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { intentionsService } from './intentions.service';
 import { getRequestTimezone } from '../commitments/commitments.controller';
+import { sendSuccess } from '../../utils/response';
 
 export const createIntention = async (
   req: Request,
@@ -13,7 +14,11 @@ export const createIntention = async (
       req.body,
       getRequestTimezone(req, res)
     );
-    res.status(201).json({ message: 'Intention created successfully.', intention });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Intention created successfully.',
+      data: { intention },
+    });
   } catch (err) {
     next(err);
   }
@@ -33,7 +38,12 @@ export const getIntentions = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 30,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Intentions retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -46,7 +56,11 @@ export const getIntentionById = async (
 ): Promise<void> => {
   try {
     const intention = await intentionsService.getIntentionById(req.user!.id, req.params.id as string);
-    res.status(200).json({ intention });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Intention retrieved successfully.',
+      data: { intention },
+    });
   } catch (err) {
     next(err);
   }
@@ -63,7 +77,11 @@ export const updateIntention = async (
       req.params.id as string,
       req.body.content
     );
-    res.status(200).json({ message: 'Intention updated successfully.', intention });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Intention updated successfully.',
+      data: { intention },
+    });
   } catch (err) {
     next(err);
   }
@@ -76,7 +94,11 @@ export const deleteIntention = async (
 ): Promise<void> => {
   try {
     const result = await intentionsService.deleteIntention(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Intention deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }

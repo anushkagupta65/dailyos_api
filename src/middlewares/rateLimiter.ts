@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { sendError } from '../utils/response';
 
 interface RateLimitRecord {
   count: number;
@@ -50,7 +51,8 @@ export const createRateLimiter = (options: {
       res.setHeader('Retry-After', retryAfterSec);
       res.setHeader('X-RateLimit-Limit', options.max);
       res.setHeader('X-RateLimit-Remaining', 0);
-      res.status(429).json({
+      sendError(res, {
+        status: 429,
         message: options.message || 'Too many requests. Please try again later.',
         retryAfterSeconds: retryAfterSec,
       });

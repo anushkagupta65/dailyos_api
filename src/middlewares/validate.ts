@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodSchema, ZodError } from 'zod';
+import { sendError } from '../utils/response';
 
 interface ValidationSchemas {
   body?: ZodSchema;
@@ -24,7 +25,8 @@ export const validate = (schemas: ValidationSchemas) => {
       next();
     } catch (err) {
       if (err instanceof ZodError) {
-        res.status(400).json({
+        sendError(res, {
+          status: 400,
           message: 'Validation failed',
           errors: err.issues.map((issue) => ({
             field: issue.path.join('.'),

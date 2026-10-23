@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { settingsService } from './settings.service';
+import { sendSuccess } from '../../utils/response';
 
 export const getPreferences = async (
   req: Request,
@@ -8,7 +9,11 @@ export const getPreferences = async (
 ): Promise<void> => {
   try {
     const preferences = await settingsService.getPreferences(req.user!.id);
-    res.status(200).json({ preferences });
+    sendSuccess(res, {
+      status: 200,
+      message: 'User preferences retrieved successfully.',
+      data: { preferences },
+    });
   } catch (err) {
     next(err);
   }
@@ -21,9 +26,10 @@ export const createPreferences = async (
 ): Promise<void> => {
   try {
     const preferences = await settingsService.createPreferences(req.user!.id, req.body);
-    res.status(201).json({
+    sendSuccess(res, {
+      status: 201,
       message: 'User preferences created successfully.',
-      preferences,
+      data: { preferences },
     });
   } catch (err) {
     next(err);
@@ -37,9 +43,10 @@ export const updatePreferences = async (
 ): Promise<void> => {
   try {
     const preferences = await settingsService.updatePreferences(req.user!.id, req.body);
-    res.status(200).json({
+    sendSuccess(res, {
+      status: 200,
       message: 'User preferences updated successfully.',
-      preferences,
+      data: { preferences },
     });
   } catch (err) {
     next(err);
@@ -53,7 +60,11 @@ export const getPrivacySettings = async (
 ): Promise<void> => {
   try {
     const privacy = await settingsService.getPrivacySettings(req.user!.id);
-    res.status(200).json({ privacy });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Privacy settings retrieved successfully.',
+      data: { privacy },
+    });
   } catch (err) {
     next(err);
   }
@@ -66,9 +77,10 @@ export const updatePrivacySettings = async (
 ): Promise<void> => {
   try {
     const privacy = await settingsService.updatePrivacySettings(req.user!.id, req.body);
-    res.status(200).json({
+    sendSuccess(res, {
+      status: 200,
       message: 'Privacy settings updated successfully.',
-      privacy,
+      data: { privacy },
     });
   } catch (err) {
     next(err);

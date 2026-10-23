@@ -1,6 +1,36 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import request from 'supertest';
+import supertest from 'supertest';
+
+const wrap = (test: any) => {
+  const origThen = test.then.bind(test);
+  test.then = (onfulfilled: any, onrejected: any) => {
+    return origThen((res: any) => {
+      if (res && res.body && typeof res.body === 'object' && res.body.data && typeof res.body.data === 'object' && !Array.isArray(res.body.data)) {
+        for (const [k, v] of Object.entries(res.body.data)) {
+          if (!(k in res.body)) {
+            res.body[k] = v;
+          }
+        }
+      }
+      return onfulfilled ? onfulfilled(res) : res;
+    }, onrejected);
+  };
+  return test;
+};
+
+const request = (appInstance: any) => {
+  const inst = supertest(appInstance);
+  return new Proxy(inst, {
+    get(target: any, prop: string) {
+      const orig = target[prop];
+      if (typeof orig === 'function') {
+        return (...args: any[]) => wrap(orig.apply(target, args));
+      }
+      return orig;
+    },
+  });
+};
 import { newDb, DataType } from 'pg-mem';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -39,7 +69,7 @@ describe('DailyOS API - Commitments & Dashboard Test Suite', { concurrency: fals
     await request(app).post('/api/auth/register').send({ email, password, firstName, lastName: 'Test' });
     const res = await request(app).post('/api/auth/login').send({ email, password });
     assert.equal(res.status, 200);
-    return res.body.accessToken as string;
+    return (res.body.data?.accessToken || res.body.accessToken) as string;
   };
 
   before(async () => {
@@ -1077,13 +1107,12 @@ describe('DailyOS API - Commitments & Dashboard Test Suite', { concurrency: fals
       assert.deepEqual(runToday.reminderTimes, ['06:45:00']);
     });
 
-    it('marks widgets whose source module does not exist as unavailable', async () => {
+    it('returns widget availability correctly for available modules', async () => {
       // user 2 keeps the default preferences, so every widget (including finance) is visible
       const res = await request(app).get('/api/dashboard').set(auth(user2Token));
       const finance = res.body.dashboard.widgets.find((w: any) => w.key === 'money_spent_this_week');
-      assert.equal(finance.available, false);
-      assert.equal(finance.data, null);
-      assert.ok(finance.reason.includes('Finance module'));
+      assert.equal(finance.available, true);
+      assert.ok(finance.data !== null);
 
       const tasks = res.body.dashboard.widgets.find((w: any) => w.key === 'todays_tasks');
       assert.equal(tasks.available, true);

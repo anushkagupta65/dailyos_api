@@ -43,13 +43,19 @@ export class PrioritiesRepository {
    * priorities; the count check and insert are a single statement. Returns null when full.
    */
   async createPriorityIfBelowLimit(db: Queryable, userId: string, data: any, maxPerDay: number) {
+    const countRes = await db.query(
+      `SELECT count(*)::int as count FROM daily_priorities WHERE user_id = $1 AND priority_date = $2`,
+      [userId, data.priorityDate]
+    );
+    const count = Number(countRes.rows[0]?.count || 0);
+    if (count >= maxPerDay) {
+      return null;
+    }
     const { rows } = await db.query(
       `INSERT INTO daily_priorities (user_id, priority_date, title, description, priority_order)
-       SELECT $1::uuid, $2::date, $3::varchar, $4::text,
-              ((SELECT count(*) FROM daily_priorities WHERE user_id = $1::uuid AND priority_date = $2::date) + 1)::smallint
-       WHERE (SELECT count(*) FROM daily_priorities WHERE user_id = $1::uuid AND priority_date = $2::date) < $5::int
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [userId, data.priorityDate, data.title, data.description || null, maxPerDay]
+      [userId, data.priorityDate, data.title, data.description || null, count + 1]
     );
     return mapPriority(rows[0]) || null;
   }

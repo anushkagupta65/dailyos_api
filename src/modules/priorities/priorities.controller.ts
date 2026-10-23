@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prioritiesService } from './priorities.service';
 import { getRequestTimezone } from '../commitments/commitments.controller';
+import { sendSuccess } from '../../utils/response';
 
 export const createPriority = async (
   req: Request,
@@ -13,7 +14,11 @@ export const createPriority = async (
       req.body,
       getRequestTimezone(req, res)
     );
-    res.status(201).json({ message: 'Priority created successfully.', priority });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Priority created successfully.',
+      data: { priority },
+    });
   } catch (err) {
     next(err);
   }
@@ -34,7 +39,12 @@ export const getPriorities = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 30,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Priorities retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -47,7 +57,11 @@ export const getPriorityById = async (
 ): Promise<void> => {
   try {
     const priority = await prioritiesService.getPriorityById(req.user!.id, req.params.id as string);
-    res.status(200).json({ priority });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Priority retrieved successfully.',
+      data: { priority },
+    });
   } catch (err) {
     next(err);
   }
@@ -64,7 +78,11 @@ export const updatePriority = async (
       req.params.id as string,
       req.body
     );
-    res.status(200).json({ message: 'Priority updated successfully.', priority });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Priority updated successfully.',
+      data: { priority },
+    });
   } catch (err) {
     next(err);
   }
@@ -81,9 +99,10 @@ export const updatePriorityCompletion = async (
       req.params.id as string,
       req.body.isCompleted
     );
-    res.status(200).json({
+    sendSuccess(res, {
+      status: 200,
       message: `Priority marked as ${priority.is_completed ? 'completed' : 'incomplete'}.`,
-      priority,
+      data: { priority },
     });
   } catch (err) {
     next(err);
@@ -101,7 +120,11 @@ export const reorderPriorities = async (
       req.body.priorityDate,
       req.body.priorityIds
     );
-    res.status(200).json({ message: 'Priorities reordered successfully.', priorities });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Priorities reordered successfully.',
+      data: { priorities },
+    });
   } catch (err) {
     next(err);
   }
@@ -114,7 +137,11 @@ export const deletePriority = async (
 ): Promise<void> => {
   try {
     const result = await prioritiesService.deletePriority(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Priority deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }

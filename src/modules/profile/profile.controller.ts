@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { profileService } from './profile.service';
+import { sendSuccess } from '../../utils/response';
 
 // ---------------- PERSONAL PROFILE ----------------
 export const getPersonalProfile = async (
@@ -9,7 +10,11 @@ export const getPersonalProfile = async (
 ): Promise<void> => {
   try {
     const profile = await profileService.getPersonalProfile(req.user!.id);
-    res.status(200).json({ profile });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Personal profile retrieved successfully.',
+      data: { profile },
+    });
   } catch (err) {
     next(err);
   }
@@ -22,7 +27,11 @@ export const updatePersonalProfile = async (
 ): Promise<void> => {
   try {
     const profile = await profileService.upsertPersonalProfile(req.user!.id, req.body);
-    res.status(200).json({ profile });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Personal profile updated successfully.',
+      data: { profile },
+    });
   } catch (err) {
     next(err);
   }
@@ -38,7 +47,11 @@ export const updateProfilePhoto = async (
       req.user!.id,
       req.body.profilePhotoUrl
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Profile photo updated successfully.',
+      data: { profilePhotoUrl: result.profilePhotoUrl },
+    });
   } catch (err) {
     next(err);
   }
@@ -52,7 +65,11 @@ export const getHealthProfile = async (
 ): Promise<void> => {
   try {
     const health = await profileService.getHealthProfile(req.user!.id);
-    res.status(200).json({ health });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Health profile retrieved successfully.',
+      data: { health },
+    });
   } catch (err) {
     next(err);
   }
@@ -65,7 +82,11 @@ export const updateHealthProfile = async (
 ): Promise<void> => {
   try {
     const health = await profileService.upsertHealthProfile(req.user!.id, req.body);
-    res.status(200).json({ health });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Health profile updated successfully.',
+      data: { health },
+    });
   } catch (err) {
     next(err);
   }
@@ -78,7 +99,11 @@ export const deleteHealthProfile = async (
 ): Promise<void> => {
   try {
     const result = await profileService.deleteHealthProfile(req.user!.id);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Health profile deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -92,7 +117,11 @@ export const addBodyMeasurement = async (
 ): Promise<void> => {
   try {
     const measurement = await profileService.addBodyMeasurement(req.user!.id, req.body);
-    res.status(201).json({ measurement });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Body measurement recorded successfully.',
+      data: { measurement },
+    });
   } catch (err) {
     next(err);
   }
@@ -109,7 +138,12 @@ export const getBodyMeasurements = async (
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
     const result = await profileService.getBodyMeasurements(req.user!.id, page, limit);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Body measurements retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -126,7 +160,11 @@ export const updateBodyMeasurement = async (
       req.params.id as string,
       req.body
     );
-    res.status(200).json({ measurement });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Body measurement updated successfully.',
+      data: { measurement },
+    });
   } catch (err) {
     next(err);
   }
@@ -142,7 +180,11 @@ export const deleteBodyMeasurement = async (
       req.user!.id,
       req.params.id as string
     );
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Body measurement deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -156,7 +198,11 @@ export const getProfessionalProfile = async (
 ): Promise<void> => {
   try {
     const professional = await profileService.getProfessionalProfile(req.user!.id);
-    res.status(200).json({ professional });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Professional profile retrieved successfully.',
+      data: { professional },
+    });
   } catch (err) {
     next(err);
   }
@@ -172,7 +218,11 @@ export const updateProfessionalProfile = async (
       req.user!.id,
       req.body
     );
-    res.status(200).json({ professional });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Professional profile updated successfully.',
+      data: { professional },
+    });
   } catch (err) {
     next(err);
   }
@@ -186,7 +236,11 @@ export const getLifestyleProfile = async (
 ): Promise<void> => {
   try {
     const lifestyle = await profileService.getLifestyleProfile(req.user!.id);
-    res.status(200).json({ lifestyle });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Lifestyle profile retrieved successfully.',
+      data: { lifestyle },
+    });
   } catch (err) {
     next(err);
   }
@@ -199,7 +253,11 @@ export const updateLifestyleProfile = async (
 ): Promise<void> => {
   try {
     const lifestyle = await profileService.upsertLifestyleProfile(req.user!.id, req.body);
-    res.status(200).json({ lifestyle });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Lifestyle profile updated successfully.',
+      data: { lifestyle },
+    });
   } catch (err) {
     next(err);
   }
@@ -213,7 +271,11 @@ export const createGoal = async (
 ): Promise<void> => {
   try {
     const goal = await profileService.createGoal(req.user!.id, req.body);
-    res.status(201).json({ goal });
+    sendSuccess(res, {
+      status: 201,
+      message: 'Personal goal created successfully.',
+      data: { goal },
+    });
   } catch (err) {
     next(err);
   }
@@ -234,7 +296,12 @@ export const getGoals = async (
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 10,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Personal goals retrieved successfully.',
+      data: result.data,
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -247,7 +314,11 @@ export const getGoalById = async (
 ): Promise<void> => {
   try {
     const goal = await profileService.getGoalById(req.user!.id, req.params.id as string);
-    res.status(200).json({ goal });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Personal goal retrieved successfully.',
+      data: { goal },
+    });
   } catch (err) {
     next(err);
   }
@@ -264,7 +335,11 @@ export const updateGoal = async (
       req.params.id as string,
       req.body
     );
-    res.status(200).json({ goal });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Personal goal updated successfully.',
+      data: { goal },
+    });
   } catch (err) {
     next(err);
   }
@@ -281,7 +356,11 @@ export const updateGoalStatus = async (
       req.params.id as string,
       req.body.status
     );
-    res.status(200).json({ goal });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Personal goal status updated successfully.',
+      data: { goal },
+    });
   } catch (err) {
     next(err);
   }
@@ -294,7 +373,11 @@ export const deleteGoal = async (
 ): Promise<void> => {
   try {
     const result = await profileService.deleteGoal(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Personal goal deleted successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -308,7 +391,11 @@ export const getCompleteProfile = async (
 ): Promise<void> => {
   try {
     const result = await profileService.getCompleteProfile(req.user!.id);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Complete profile retrieved successfully.',
+      data: { profile: result },
+    });
   } catch (err) {
     next(err);
   }

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { dataService } from './data.service';
+import { sendSuccess } from '../../utils/response';
 
 // ---------------- EXPORTS ----------------
 export const requestExport = async (
@@ -10,9 +11,10 @@ export const requestExport = async (
   try {
     const exportType = req.body.exportType || 'full';
     const exportRecord = await dataService.requestExport(req.user!.id, exportType);
-    res.status(202).json({
+    sendSuccess(res, {
+      status: 202,
       message: 'Data export request submitted successfully.',
-      export: exportRecord,
+      data: { export: exportRecord },
     });
   } catch (err) {
     next(err);
@@ -27,7 +29,12 @@ export const listExports = async (
   try {
     const query = res.locals.validatedQuery || req.query;
     const result = await dataService.listExports(req.user!.id, query);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Data exports retrieved successfully.',
+      data: { exports: result.exports },
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -40,7 +47,11 @@ export const getExportById = async (
 ): Promise<void> => {
   try {
     const exportRecord = await dataService.getExportById(req.user!.id, req.params.id as string);
-    res.status(200).json({ export: exportRecord });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Data export retrieved successfully.',
+      data: { export: exportRecord },
+    });
   } catch (err) {
     next(err);
   }
@@ -67,9 +78,10 @@ export const requestImport = async (
 ): Promise<void> => {
   try {
     const importRecord = await dataService.requestImport(req.user!.id, req.body);
-    res.status(200).json({
+    sendSuccess(res, {
+      status: 200,
       message: 'Data imported successfully.',
-      import: importRecord,
+      data: { import: importRecord },
     });
   } catch (err) {
     next(err);
@@ -84,7 +96,12 @@ export const listImports = async (
   try {
     const query = res.locals.validatedQuery || req.query;
     const result = await dataService.listImports(req.user!.id, query);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Data imports retrieved successfully.',
+      data: { imports: result.imports },
+      pagination: result.pagination,
+    });
   } catch (err) {
     next(err);
   }
@@ -97,7 +114,11 @@ export const getImportById = async (
 ): Promise<void> => {
   try {
     const importRecord = await dataService.getImportById(req.user!.id, req.params.id as string);
-    res.status(200).json({ import: importRecord });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Data import retrieved successfully.',
+      data: { import: importRecord },
+    });
   } catch (err) {
     next(err);
   }

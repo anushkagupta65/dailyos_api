@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
 import { env } from '../../config/env';
+import { sendSuccess } from '../../utils/response';
 
 const setRefreshTokenCookie = (res: Response, refreshToken: string) => {
   res.cookie('refresh_token', refreshToken, {
@@ -34,7 +35,11 @@ const getClientInfo = (req: Request) => {
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const result = await authService.register(req.body);
-    res.status(201).json(result);
+    sendSuccess(res, {
+      status: 201,
+      message: result.message || 'Registration successful. Please verify your email address.',
+      data: { user: result.user },
+    });
   } catch (err) {
     next(err);
   }
@@ -50,7 +55,15 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     });
 
     setRefreshTokenCookie(res, result.refreshToken);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Login successful',
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        user: result.user,
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -65,7 +78,15 @@ export const googleSignIn = async (req: Request, res: Response, next: NextFuncti
     });
 
     setRefreshTokenCookie(res, result.refreshToken);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Sign in with Google successful',
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        user: result.user,
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -78,7 +99,14 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     const result = await authService.refreshToken(token, clientInfo.ipAddress);
 
     setRefreshTokenCookie(res, result.refreshToken);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Tokens refreshed successfully',
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -90,7 +118,11 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
     await authService.logout(req.sessionId, rawRefreshToken);
 
     clearRefreshTokenCookie(res);
-    res.status(200).json({ message: 'Logged out successfully.' });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Logged out successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -106,7 +138,11 @@ export const logoutFromAllDevices = async (
     const result = await authService.logoutFromAllDevices(userId);
 
     clearRefreshTokenCookie(res);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'All active sessions have been revoked successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -115,7 +151,11 @@ export const logoutFromAllDevices = async (
 export const verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const result = await authService.verifyEmail(req.body.token);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Email verified successfully. You may now log in.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -128,7 +168,11 @@ export const forgotPassword = async (
 ): Promise<void> => {
   try {
     const result = await authService.forgotPassword(req.body.email);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message,
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -144,7 +188,11 @@ export const resetPassword = async (
       token: req.body.token,
       newPassword: req.body.newPassword,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Password reset successfully. You may now log in with your new password.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -157,7 +205,11 @@ export const getCurrentUser = async (
 ): Promise<void> => {
   try {
     const result = await authService.getCurrentUser(req.user!.id);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: 'Current user retrieved successfully',
+      data: { user: result },
+    });
   } catch (err) {
     next(err);
   }
@@ -173,7 +225,11 @@ export const updatePassword = async (
       currentPassword: req.body.currentPassword,
       newPassword: req.body.newPassword,
     });
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Password updated successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
@@ -186,7 +242,11 @@ export const getActiveSessions = async (
 ): Promise<void> => {
   try {
     const result = await authService.getActiveSessions(req.user!.id, req.sessionId);
-    res.status(200).json({ sessions: result });
+    sendSuccess(res, {
+      status: 200,
+      message: 'Active sessions retrieved successfully.',
+      data: { sessions: result },
+    });
   } catch (err) {
     next(err);
   }
@@ -199,7 +259,11 @@ export const revokeSession = async (
 ): Promise<void> => {
   try {
     const result = await authService.revokeSession(req.user!.id, req.params.id as string);
-    res.status(200).json(result);
+    sendSuccess(res, {
+      status: 200,
+      message: result.message || 'Session revoked successfully.',
+      data: {},
+    });
   } catch (err) {
     next(err);
   }
